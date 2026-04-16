@@ -4,9 +4,17 @@ A privacy-preserving Sudoku dApp built on the [Midnight blockchain](https://midn
 
 ## Inspiration
 
-The direct inspiration for this project comes from [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by @CharlesHoskinson. The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise so I went though it.
+The direct inspiration for this project comes from [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by [CharlesHoskinson](https://github.com/CharlesHoskinson). The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise so I went though it.
 
 Building it from scratch was also a deliberate learning exercise: working through a real example — even a toy one — is the fastest way to build an accurate mental model of how Midnight and Compact actually fit together.
+
+## Status
+
+| Environment | Status |
+|-------------|--------|
+| Standalone (Docker) | Not tested |
+| Preview network | Working |
+| Preprod network | Not tested |
 
 ## What it does
 
@@ -29,20 +37,16 @@ npm install
 
 ## Build
 
-The contract must be built before the API and CLI can use it. If you have modified `contract/src/sudoku.compact`, recompile first:
-
 ```bash
-# Recompile the Compact contract (only needed after editing .compact)
-cd contract && npm run compact && cd ..
-
-# Build the contract package (copies compiled artifacts to dist/)
-cd contract && npm run build && cd ..
-
-# Build the API package
-cd api && npm run build && cd ..
+npm run build
 ```
 
-If you have not changed the contract, only the last two steps are needed after a fresh clone.
+This builds the contract, API, and CLI packages in order. If you have modified `contract/src/sudoku.compact`, recompile the contract first:
+
+```bash
+cd contract && npm run compact && cd ..
+npm run build
+```
 
 ## Run
 
@@ -51,7 +55,7 @@ If you have not changed the contract, only the last two steps are needed after a
 Spins up a full Midnight stack locally via Docker. No wallet seed required — a genesis seed is used automatically.
 
 ```bash
-cd cli && npm run standalone
+npm run standalone
 ```
 
 ### Preview network
@@ -59,13 +63,13 @@ cd cli && npm run standalone
 Connects to the Midnight preview network. You need a wallet seed and tDUST tokens.
 
 ```bash
-cd cli && npm run preview-remote
+npm run preview
 ```
 
 ### Preprod network
 
 ```bash
-cd cli && npm run preprod-remote
+npm run preprod
 ```
 
 ## Usage walkthrough
@@ -122,6 +126,5 @@ The solution is stored locally. It is passed to the ZK circuit as a witness at p
 
 - Use a witness to generate the puzzle on the publisher's machine, so the grid is created client-side before deployment rather than being hardcoded in the contract.
 - Support variable grid sizes (e.g. 9×9) by parameterising the contract dimensions.
-- Add top-level build scripts to the root `package.json` so the entire project can be compiled with a single command instead of building each package manually.
 - Build a GUI to explore wallet integration and the broader Midnight dApp connector model.
 - Add a circuit that lets a solver prove to a third party that they are in the solvers set, without revealing which entry is theirs.
