@@ -6,6 +6,12 @@
   "engines": {
     "node": ">=22.0.0"
   },
+  "scripts": {
+    "build": "npm run build --workspace=contract && npm run build --workspace=api && npm run build --workspace=cli",
+    "standalone": "npm run standalone --workspace=cli",
+    "preview": "npm run preview-remote --workspace=cli",
+    "preprod": "npm run preprod-remote --workspace=cli"
+  },
   "workspaces": {
     "packages": [
       "cli",
