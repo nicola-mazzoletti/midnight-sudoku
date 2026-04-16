@@ -1,0 +1,99 @@
+// A sudoku puzzle where the initial grid is stored on the ledger and cannot be changed, 
+// users can submit their solutions to the puzzle, which are verified by the circuit
+// if correct, the solver's hashed public key is added to the solvers list.
+// user can't solve the puzzle twice
+// solvers can demostrate that they solved the puzzle without revealing the solution of it, so solution stays private
+
+// variables with _ prefix, are inputs that need to stay private
+
+pragma language_version >= 0.22;
+import CompactStandardLibrary;
+
+// initial puzzle grid, sealed to prevent changes after deployment
+export sealed ledger puzzle: Vector<4, Vector<4, Uint<0..5>>>;
+// list of solvers who have solved the puzzle, stored as hashed public keys to maintain privacy
+export ledger solvers: Set<Bytes<32>>;
+
+witness solution(): Vector<4, Vector<4, Uint<0..5>>>;
+
+constructor() {
+    puzzle = [
+        [1, 0, 0, 4],
+        [0, 4, 1, 0],
+        [0, 1, 0, 0],
+        [4, 0, 0, 1],
+    ];
+}
+
+// Hash a public key to maintain privacy when storing solvers in the list, so we can verify if a user has already solved the puzzle without revealing their identity
+circuit hashPublicKey(_pk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "solver:pk:"), _pk]);
+}
+
+// Return the number of solvers who have solved the puzzle 
+export circuit getSolvedTimes(): Uint<64> {
+    return solvers.size();
+}
+
+// Return the initial puzzle grid
+export circuit getPuzzle(): Vector<4, Vector<4, Uint<0..5>>> {
+    return puzzle;
+}
+
+// check if solution is correct
+// check that there are no 0s in the solution, meaning the puzzle is complete
+// check that the solution matches the initial puzzle for non-zero values
+// check that rows are correct
+// check that columns are correct
+// check that 2x2 boxes are correct
+export circuit checkSolution(_solverPk: Bytes<32>): [] {
+    // hash the solver's public key to maintain privacy
+    const hashedSolverPk = disclose(hashPublicKey(_solverPk));
+    // check that the user has not already solved the puzzle
+    assert(solvers.member(hashedSolverPk) == false, "You have already solved the puzzle"); // true if the hashed public key is not in the solvers set and false if it is, and message on false
+    
+    const _solution = solution();
+
+    for (const y of 0..4) {
+        for (const x of 0..4) {
+            // assert that there are no 0s in the solution which would mean that the puzzle is complete
+            assert(_solution[x][y] != 0, "Solution not complete"); // true if the cell is not 0 and false if it is, and message on false
+
+            if (puzzle[x][y] != 0) {
+                // assert that the solution matches the initial puzzle for non-zero values
+                assert(_solution[x][y] == puzzle[x][y], "Solution does not match the initial puzzle"); // true if cells are equals and false if they differ, and message on false
+            }
+
+            for (const i of 0..4) {
+                // assert that each row contains unique numbers from 1 to 4
+                if (i != x) {
+                    assert(_solution[x][y] != _solution[i][y], "Row contains duplicate numbers"); // true if the cells are different and false if they are the same, and message on false
+                }
+
+                // assert that each column contains unique numbers from 1 to 4
+                if (i != y) {
+                    assert(_solution[x][y] != _solution[x][i], "Column contains duplicate numbers"); // true if the cells are different and false if they are the same, and message on false
+                }
+            }
+
+            // check if 2x2 boxes contains unique numbers from 1 to 4
+            // rows and columns already check 4 of the 6 pairs in each box,
+            // so we only need to verify the 2 diagonal pairs
+            if ((x == 0 || x == 2) && (y == 0 || y == 2)){
+                for (const bx of 0..4) {
+                    for (const by of 0..4) {
+                        if (bx == x + 1 && by == y + 1) {
+                            // diagonal: (x,y) vs (x+1,y+1)
+                            assert(_solution[x][y] != _solution[bx][by], "Box contains duplicate numbers");
+                            // anti-diagonal: (x+1,y) vs (x,y+1)
+                            assert(_solution[bx][y] != _solution[x][by], "Box contains duplicate numbers");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // if the solution is correct, add the solver's hashed public key to the solvers list, public key remains private as it was hashed before being added to the list
+    solvers.insert(hashedSolverPk);
+}

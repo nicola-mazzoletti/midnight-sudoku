@@ -1,0 +1,23 @@
+{
+    "name": "@nicolamazzoletti/midnight-sudoku-cli",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "rm -rf dist && tsc --project tsconfig.build.json && ([ -d ../contract/src/managed ] && mkdir -p dist/contract/src && cp -R ../contract/src/managed dist/contract/src/managed || true)",
+        "standalone": "node --experimental-specifier-resolution=node --loader ts-node/esm src/launcher/standalone.ts",
+        "preview-remote": "node --experimental-specifier-resolution=node --loader ts-node/esm src/launcher/preview.ts",
+        "preprod-remote": "node --experimental-specifier-resolution=node --loader ts-node/esm src/launcher/preprod.ts",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
+    },
+    "dependencies": {
+        "@nicolamazzoletti/midnight-sudoku-api": "*",
+        "pino-pretty": "^13.1.3"
+    },
+    "devDependencies": {
+        "@types/json-schema": "^7.0.15",
+        "@types/node": "^22.0.0",
+        "@types/ws": "^8.18.0",
+        "ts-node": "^10.9.2"
+    }
+}

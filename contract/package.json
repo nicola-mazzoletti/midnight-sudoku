@@ -1,0 +1,25 @@
+{
+    "name": "@nicolamazzoletti/midnight-sudoku-contract",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/sudoku.compact ./dist",
+        "compact": "compact compile src/sudoku.compact ./src/managed/sudoku",
+        "prepack": "npm build",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
+    },
+    "devDependencies": {
+        "typescript": "^6.0.2"
+    }
+}
