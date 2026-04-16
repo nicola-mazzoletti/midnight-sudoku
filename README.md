@@ -1,10 +1,127 @@
 # Midnight Sudoku
 
-## Install
-npm install
+A privacy-preserving Sudoku dApp built on the [Midnight blockchain](https://midnight.network), written as a learning exercise to build a hands-on mental model of Midnight and the Compact smart contract language.
 
-## Compile Contract
-cd contract
-npm run compact    # Compiles the Compact contract
-npm run build      # Copies compiled files to dist/
-cd ..
+## Inspiration
+
+The direct inspiration for this project comes from [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by @CharlesHoskinson. The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise so I went though it.
+
+Building it from scratch was also a deliberate learning exercise: working through a real example — even a toy one — is the fastest way to build an accurate mental model of how Midnight and Compact actually fit together.
+
+## What it does
+
+- A 4×4 Sudoku puzzle is stored on the ledger at deploy time and cannot be changed afterwards (it is declared `sealed`).
+- Any user can submit a solution. The solution is kept entirely private — it is provided as a ZK **witness** and never leaves the client.
+- The Compact circuit verifies:
+  - The solution is complete (no zeros).
+  - It is consistent with the given clues.
+  - Every row, column, and 2×2 box contains the digits 1–4 exactly once.
+- If verification passes, the solver's hashed public key is recorded on-chain in a `Set`. The raw public key is never stored.
+- A solver can only submit once — the contract checks set membership before accepting a new proof.
+
+The result: anyone can verify *how many* unique people have solved the puzzle, and a solver can prove *they* are one of them — all without revealing the solution.
+
+## Install
+
+```bash
+npm install
+```
+
+## Build
+
+The contract must be built before the API and CLI can use it. If you have modified `contract/src/sudoku.compact`, recompile first:
+
+```bash
+# Recompile the Compact contract (only needed after editing .compact)
+cd contract && npm run compact && cd ..
+
+# Build the contract package (copies compiled artifacts to dist/)
+cd contract && npm run build && cd ..
+
+# Build the API package
+cd api && npm run build && cd ..
+```
+
+If you have not changed the contract, only the last two steps are needed after a fresh clone.
+
+## Run
+
+### Standalone (local Docker environment)
+
+Spins up a full Midnight stack locally via Docker. No wallet seed required — a genesis seed is used automatically.
+
+```bash
+cd cli && npm run standalone
+```
+
+### Preview network
+
+Connects to the Midnight preview network. You need a wallet seed and tDUST tokens.
+
+```bash
+cd cli && npm run preview-remote
+```
+
+### Preprod network
+
+```bash
+cd cli && npm run preprod-remote
+```
+
+## Usage walkthrough
+
+When you start the CLI you are first asked to set up a wallet, then presented with two options:
+
+```
+You can do one of the following:
+  1. Deploy a new Sudoku puzzle contract
+  2. Join an existing Sudoku puzzle contract
+  3. Exit
+```
+
+**Deploy** creates a fresh contract on-chain and prints the contract address. Share that address with anyone you want to challenge.
+
+**Join** takes an existing contract address. If you have already entered a solution in a previous session it will be restored from local private state; otherwise you are prompted to enter it row by row.
+
+Once joined, the main menu lets you:
+
+```
+  1. Display puzzle         — pretty-print the on-chain grid
+  2. Submit your solution   — generate a ZK proof and submit it on-chain
+  3. Display full state     — show puzzle + solver count + your local solution
+  4. Show contract address  — copy-paste this to share with others
+  5. Exit
+```
+
+**Puzzle grid display:**
+
+```
++-------+-------+
+| 1   . | .   4 |
+| .   4 | 1   . |
++-------+-------+
+| .   1 | .   . |
+| 4   . | .   1 |
++-------+-------+
+```
+
+**Entering a solution** (when prompted):
+
+```
+Enter the solution row by row (space-separated values 1–4):
+Row 1: * * * *
+Row 2: * * * *
+Row 3: * * * *
+Row 4: * * * *
+```
+
+The solution is stored locally. It is passed to the ZK circuit as a witness at proof time — never sent to the network in plain text.
+
+
+## Future ideas
+
+- Use a witness to generate the puzzle on the publisher's machine, so the grid is created client-side before deployment rather than being hardcoded in the contract.
+- Support variable grid sizes (e.g. 9×9) by parameterising the contract dimensions.
+- Add top-level build scripts to the root `package.json` so the entire project can be compiled with a single command instead of building each package manually.
+- Build a GUI to explore wallet integration and the broader Midnight dApp connector model.
+- Add a circuit that lets a solver prove to a third party that they are in the solvers set, without revealing which entry is theirs.
