@@ -20,14 +20,22 @@ import {
   type FinalizedTransaction,
   LedgerParameters,
   ZswapSecretKeys,
-} from '@midnight-ntwrk/ledger-v8';
-import { type MidnightProvider, type UnboundTransaction, type WalletProvider } from '@midnight-ntwrk/midnight-js-types';
-import { ttlOneHour } from '@midnight-ntwrk/midnight-js-utils';
-import { type WalletFacade } from '@midnight-ntwrk/wallet-sdk-facade';
-import type { Logger } from 'pino';
+} from "@midnight-ntwrk/ledger-v8";
+import {
+  type MidnightProvider,
+  type UnboundTransaction,
+  type WalletProvider,
+} from "@midnight-ntwrk/midnight-js-types";
+import { ttlOneHour } from "@midnight-ntwrk/midnight-js-utils";
+import { type WalletFacade } from "@midnight-ntwrk/wallet-sdk-facade";
+import type { Logger } from "pino";
 
-import { getInitialShieldedState } from './wallet-utils';
-import { type DustWalletOptions, type EnvironmentConfiguration, FluentWalletBuilder } from '@midnight-ntwrk/testkit-js';
+import { getInitialShieldedState } from "./wallet-utils";
+import {
+  type DustWalletOptions,
+  type EnvironmentConfiguration,
+  FluentWalletBuilder,
+} from "@midnight-ntwrk/testkit-js";
 
 type UnshieldedKeystore = {
   getPublicKey(): unknown;
@@ -38,7 +46,9 @@ type UnshieldedKeystore = {
  * Provider class that implements wallet functionality for the Midnight network.
  * Handles transaction balancing, submission, and wallet state management.
  */
-export class MidnightWalletProvider implements MidnightProvider, WalletProvider {
+export class MidnightWalletProvider
+  implements MidnightProvider, WalletProvider
+{
   logger: Logger;
   readonly env: EnvironmentConfiguration;
   readonly wallet: WalletFacade;
@@ -70,13 +80,21 @@ export class MidnightWalletProvider implements MidnightProvider, WalletProvider 
     return this.zswapSecretKeys.encryptionPublicKey;
   }
 
-  async balanceTx(tx: UnboundTransaction, ttl: Date = ttlOneHour()): Promise<FinalizedTransaction> {
+  async balanceTx(
+    tx: UnboundTransaction,
+    ttl: Date = ttlOneHour(),
+  ): Promise<FinalizedTransaction> {
     const recipe = await this.wallet.balanceUnboundTransaction(
       tx,
-      { shieldedSecretKeys: this.zswapSecretKeys, dustSecretKey: this.dustSecretKey },
+      {
+        shieldedSecretKeys: this.zswapSecretKeys,
+        dustSecretKey: this.dustSecretKey,
+      },
       { ttl },
     );
-    const signedRecipe = await this.wallet.signRecipe(recipe, (payload) => this.unshieldedKeystore.signData(payload));
+    const signedRecipe = await this.wallet.signRecipe(recipe, (payload) =>
+      this.unshieldedKeystore.signData(payload),
+    );
     return this.wallet.finalizeRecipe(signedRecipe);
   }
 
@@ -86,7 +104,7 @@ export class MidnightWalletProvider implements MidnightProvider, WalletProvider 
 
   // We do not wait for funds here; the CLI flow handles it explicitly.
   async start(): Promise<void> {
-    this.logger.info('Starting wallet...');
+    this.logger.info("Starting wallet...");
     await this.wallet.start(this.zswapSecretKeys, this.dustSecretKey);
   }
 
@@ -94,13 +112,21 @@ export class MidnightWalletProvider implements MidnightProvider, WalletProvider 
     return this.wallet.stop();
   }
 
-  static async build(logger: Logger, env: EnvironmentConfiguration, seed?: string): Promise<MidnightWalletProvider> {
+  static async build(
+    logger: Logger,
+    env: EnvironmentConfiguration,
+    seed?: string,
+  ): Promise<MidnightWalletProvider> {
     const dustOptions: DustWalletOptions = {
       ledgerParams: LedgerParameters.initialParameters(),
-      additionalFeeOverhead: env.walletNetworkId === 'undeployed' ? 500_000_000_000_000_000n : 1_000n,
+      additionalFeeOverhead:
+        env.walletNetworkId === "undeployed"
+          ? 500_000_000_000_000_000n
+          : 1_000n,
       feeBlocksMargin: 5,
     };
-    const builder = FluentWalletBuilder.forEnvironment(env).withDustOptions(dustOptions);
+    const builder =
+      FluentWalletBuilder.forEnvironment(env).withDustOptions(dustOptions);
     const buildResult = seed
       ? await builder.withSeed(seed).buildWithoutStarting()
       : await builder.withRandomSeed().buildWithoutStarting();

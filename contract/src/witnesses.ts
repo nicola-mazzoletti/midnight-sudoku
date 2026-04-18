@@ -1,5 +1,5 @@
-import { type Ledger } from './managed/sudoku/contract/index.js';
-import { WitnessContext } from '@midnight-ntwrk/compact-runtime';
+import { type Ledger } from "./managed/sudoku/contract/index.js";
+import { WitnessContext } from "@midnight-ntwrk/compact-runtime";
 
 /**
  * The private state for the Sudoku contract.
@@ -10,7 +10,9 @@ export type SudokuPrivateState = {
   readonly solution: bigint[][];
 };
 
-export const createSudokuPrivateState = (solution: bigint[][]): SudokuPrivateState => ({
+export const createSudokuPrivateState = (
+  solution: bigint[][],
+): SudokuPrivateState => ({
   solution,
 });
 
@@ -19,6 +21,10 @@ export const createSudokuPrivateState = (solution: bigint[][]): SudokuPrivateSta
  * The `solution` witness returns the solver's private grid when the circuit needs it.
  */
 export const witnesses = {
-  solution: ({ privateState }: WitnessContext<Ledger, SudokuPrivateState>): [SudokuPrivateState, bigint[][]] =>
-    [privateState, privateState.solution],
+  solution: ({
+    privateState,
+  }: WitnessContext<Ledger, SudokuPrivateState>): [
+    SudokuPrivateState,
+    bigint[][],
+  ] => [privateState, privateState.solution],
 };

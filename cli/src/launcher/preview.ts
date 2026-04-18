@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { createLogger } from '../logger-utils.js';
-import { run } from '../index.js';
-import { PreviewRemoteConfig } from '../config.js';
+import { createLogger } from "../logger-utils.js";
+import { run } from "../index.js";
+import { PreviewRemoteConfig } from "../config.js";
 
 const config = new PreviewRemoteConfig();
 const logger = await createLogger(config.logDir);

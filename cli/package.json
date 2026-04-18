@@ -6,6 +6,7 @@
     "scripts": {
         "build": "rm -rf dist && tsc --project tsconfig.build.json && ([ -d ../contract/src/managed ] && mkdir -p dist/contract/src && cp -R ../contract/src/managed dist/contract/src/managed || true)",
         "ci": "npm run typecheck && npm run lint && npm run build",
+        "lint": "eslint src",
         "standalone": "node --experimental-specifier-resolution=node --loader ts-node/esm src/launcher/standalone.ts",
         "preview-remote": "node --experimental-specifier-resolution=node --loader ts-node/esm src/launcher/preview.ts",
         "preprod-remote": "node --experimental-specifier-resolution=node --loader ts-node/esm src/launcher/preprod.ts",

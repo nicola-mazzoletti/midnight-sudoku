@@ -1,5 +1,8 @@
-import * as Sudoku from '@nicolamazzoletti/midnight-sudoku-contract';
-import { type ContractAddress, type ContractState } from '@midnight-ntwrk/compact-runtime';
+import * as Sudoku from "@nicolamazzoletti/midnight-sudoku-contract";
+import {
+  type ContractAddress,
+  type ContractState,
+} from "@midnight-ntwrk/compact-runtime";
 
 type Logger = {
   info: (msg: unknown) => void;
@@ -11,10 +14,17 @@ import {
   type SudokuProviders,
   type DeployedSudokuContract,
   sudokuPrivateStateKey,
-} from './common-types.js';
-import { compiledSudokuContract, type SudokuPrivateState, createSudokuPrivateState } from '@nicolamazzoletti/midnight-sudoku-contract';
-import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
-import { combineLatest, map, tap, from, type Observable } from 'rxjs';
+} from "./common-types.js";
+import {
+  compiledSudokuContract,
+  type SudokuPrivateState,
+  createSudokuPrivateState,
+} from "@nicolamazzoletti/midnight-sudoku-contract";
+import {
+  deployContract,
+  findDeployedContract,
+} from "@midnight-ntwrk/midnight-js-contracts";
+import { combineLatest, map, tap, from, type Observable } from "rxjs";
 
 export interface DeployedSudokuAPI {
   readonly deployedContractAddress: ContractAddress;
@@ -31,22 +41,35 @@ export class SudokuAPI implements DeployedSudokuAPI {
     private readonly providers: SudokuProviders,
     private readonly logger?: Logger,
   ) {
-    this.deployedContractAddress = deployedContract.deployTxData.public.contractAddress;
-    providers.privateStateProvider.setContractAddress(this.deployedContractAddress);
+    this.deployedContractAddress =
+      deployedContract.deployTxData.public.contractAddress;
+    providers.privateStateProvider.setContractAddress(
+      this.deployedContractAddress,
+    );
 
     this.state$ = combineLatest(
       [
         // Public ledger state
         providers.publicDataProvider
-          .contractStateObservable(this.deployedContractAddress, { type: 'latest' })
+          .contractStateObservable(this.deployedContractAddress, {
+            type: "latest",
+          })
           .pipe(
-            map((contractState: ContractState) => Sudoku.ledger(contractState.data)),
+            map((contractState: ContractState) =>
+              Sudoku.ledger(contractState.data),
+            ),
             tap((ledgerState) =>
-              logger?.trace({ ledgerStateChanged: { solvedTimes: ledgerState.solvers.size() } }),
+              logger?.trace({
+                ledgerStateChanged: { solvedTimes: ledgerState.solvers.size() },
+              }),
             ),
           ),
         // Private state (solution never changes after being set, so query once)
-        from(providers.privateStateProvider.get(sudokuPrivateStateKey) as Promise<SudokuPrivateState>),
+        from(
+          providers.privateStateProvider.get(
+            sudokuPrivateStateKey,
+          ) as Promise<SudokuPrivateState>,
+        ),
       ],
       (ledgerState, privateState) => ({
         puzzle: ledgerState.puzzle,
@@ -66,13 +89,14 @@ export class SudokuAPI implements DeployedSudokuAPI {
    * @param solverPublicKey The solver's public key, used to prevent duplicate submissions.
    */
   async checkSolution(solverPublicKey: Uint8Array): Promise<void> {
-    this.logger?.info('checkSolution');
+    this.logger?.info("checkSolution");
 
-    const txData = await this.deployedContract.callTx.checkSolution(solverPublicKey);
+    const txData =
+      await this.deployedContract.callTx.checkSolution(solverPublicKey);
 
     this.logger?.trace({
       transactionAdded: {
-        circuit: 'checkSolution',
+        circuit: "checkSolution",
         txHash: txData.public.txHash,
         blockHeight: txData.public.blockHeight,
       },
@@ -118,7 +142,7 @@ export class SudokuAPI implements DeployedSudokuAPI {
     solution: bigint[][] = [],
     logger?: Logger,
   ): Promise<SudokuAPI> {
-    logger?.info('deployContract');
+    logger?.info("deployContract");
 
     const deployedContract = await deployContract(providers, {
       compiledContract: compiledSudokuContract,
@@ -126,7 +150,11 @@ export class SudokuAPI implements DeployedSudokuAPI {
       initialPrivateState: createSudokuPrivateState(solution),
     });
 
-    logger?.trace({ contractDeployed: { finalizedDeployTxData: deployedContract.deployTxData.public } });
+    logger?.trace({
+      contractDeployed: {
+        finalizedDeployTxData: deployedContract.deployTxData.public,
+      },
+    });
 
     return new SudokuAPI(deployedContract, providers, logger);
   }
@@ -147,14 +175,25 @@ export class SudokuAPI implements DeployedSudokuAPI {
   ): Promise<SudokuAPI> {
     logger?.info({ joinContract: { contractAddress } });
 
-    const deployedContract = await findDeployedContract<SudokuContract>(providers, {
-      contractAddress,
-      compiledContract: compiledSudokuContract,
-      privateStateId: sudokuPrivateStateKey,
-      initialPrivateState: await SudokuAPI.getPrivateState(providers, contractAddress, solution),
-    });
+    const deployedContract = await findDeployedContract<SudokuContract>(
+      providers,
+      {
+        contractAddress,
+        compiledContract: compiledSudokuContract,
+        privateStateId: sudokuPrivateStateKey,
+        initialPrivateState: await SudokuAPI.getPrivateState(
+          providers,
+          contractAddress,
+          solution,
+        ),
+      },
+    );
 
-    logger?.trace({ contractJoined: { finalizedDeployTxData: deployedContract.deployTxData.public } });
+    logger?.trace({
+      contractJoined: {
+        finalizedDeployTxData: deployedContract.deployTxData.public,
+      },
+    });
 
     return new SudokuAPI(deployedContract, providers, logger);
   }
@@ -165,9 +204,11 @@ export class SudokuAPI implements DeployedSudokuAPI {
     solution: bigint[][],
   ): Promise<SudokuPrivateState> {
     providers.privateStateProvider.setContractAddress(contractAddress);
-    const existing = await providers.privateStateProvider.get(sudokuPrivateStateKey);
+    const existing = await providers.privateStateProvider.get(
+      sudokuPrivateStateKey,
+    );
     return existing ?? createSudokuPrivateState(solution);
   }
 }
 
-export * from './common-types.js';
+export * from "./common-types.js";

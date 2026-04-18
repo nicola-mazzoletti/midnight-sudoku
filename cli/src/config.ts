@@ -13,15 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import path from 'node:path';
+import path from "node:path";
 import {
   EnvironmentConfiguration,
   getTestEnvironment,
   RemoteTestEnvironment,
   TestEnvironment,
-} from '@midnight-ntwrk/testkit-js';
-import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
-import { Logger } from 'pino';
+} from "@midnight-ntwrk/testkit-js";
+import { setNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
+import { Logger } from "pino";
 
 export interface Config {
   readonly privateStateStoreName: string;
@@ -32,39 +32,81 @@ export interface Config {
   readonly generateDust: boolean;
 }
 
-export const currentDir = path.resolve(new URL(import.meta.url).pathname, '..');
+export const currentDir = path.resolve(new URL(import.meta.url).pathname, "..");
 
 export class StandaloneConfig implements Config {
   getEnvironment(logger: Logger): TestEnvironment {
     return getTestEnvironment(logger) as TestEnvironment;
   }
-  privateStateStoreName = 'sudoku-private-state';
-  logDir = path.resolve(currentDir, '..', 'logs', 'standalone', `${new Date().toISOString()}.log`);
-  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'sudoku');
+  privateStateStoreName = "sudoku-private-state";
+  logDir = path.resolve(
+    currentDir,
+    "..",
+    "logs",
+    "standalone",
+    `${new Date().toISOString()}.log`,
+  );
+  zkConfigPath = path.resolve(
+    currentDir,
+    "..",
+    "..",
+    "contract",
+    "src",
+    "managed",
+    "sudoku",
+  );
   requestFaucetTokens = false;
   generateDust = false;
 }
 
 export class PreviewRemoteConfig implements Config {
   getEnvironment(logger: Logger): TestEnvironment {
-    setNetworkId('preview');
+    setNetworkId("preview");
     return new PreviewTestEnvironment(logger);
   }
-  privateStateStoreName = 'sudoku-private-state';
-  logDir = path.resolve(currentDir, '..', 'logs', 'preview-remote', `${new Date().toISOString()}.log`);
-  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'sudoku');
+  privateStateStoreName = "sudoku-private-state";
+  logDir = path.resolve(
+    currentDir,
+    "..",
+    "logs",
+    "preview-remote",
+    `${new Date().toISOString()}.log`,
+  );
+  zkConfigPath = path.resolve(
+    currentDir,
+    "..",
+    "..",
+    "contract",
+    "src",
+    "managed",
+    "sudoku",
+  );
   requestFaucetTokens = false; // Faucet not available via API, gives 500 error
   generateDust = true;
 }
 
 export class PreprodRemoteConfig implements Config {
   getEnvironment(logger: Logger): TestEnvironment {
-    setNetworkId('preprod');
+    setNetworkId("preprod");
     return new PreprodTestEnvironment(logger);
   }
-  privateStateStoreName = 'sudoku-private-state';
-  logDir = path.resolve(currentDir, '..', 'logs', 'preprod-remote', `${new Date().toISOString()}.log`);
-  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'sudoku');
+  privateStateStoreName = "sudoku-private-state";
+  logDir = path.resolve(
+    currentDir,
+    "..",
+    "logs",
+    "preprod-remote",
+    `${new Date().toISOString()}.log`,
+  );
+  zkConfigPath = path.resolve(
+    currentDir,
+    "..",
+    "..",
+    "contract",
+    "src",
+    "managed",
+    "sudoku",
+  );
   requestFaucetTokens = false; // Faucet not available via API, gives 500 error
   generateDust = true;
 }
@@ -75,22 +117,24 @@ export class PreviewTestEnvironment extends RemoteTestEnvironment {
   }
 
   private getProofServerUrl(): string {
-    const container = this.proofServerContainer as { getUrl(): string } | undefined;
+    const container = this.proofServerContainer as
+      | { getUrl(): string }
+      | undefined;
     if (!container) {
-      throw new Error('Proof server container is not available.');
+      throw new Error("Proof server container is not available.");
     }
     return container.getUrl();
   }
 
   getEnvironmentConfiguration(): EnvironmentConfiguration {
     return {
-      walletNetworkId: 'preview',
-      networkId: 'preview',
-      indexer: 'https://indexer.preview.midnight.network/api/v3/graphql',
-      indexerWS: 'wss://indexer.preview.midnight.network/api/v3/graphql/ws',
-      node: 'https://rpc.preview.midnight.network',
-      nodeWS: 'wss://rpc.preview.midnight.network',
-      faucet: 'https://faucet.preview.midnight.network/api/request-tokens',
+      walletNetworkId: "preview",
+      networkId: "preview",
+      indexer: "https://indexer.preview.midnight.network/api/v3/graphql",
+      indexerWS: "wss://indexer.preview.midnight.network/api/v3/graphql/ws",
+      node: "https://rpc.preview.midnight.network",
+      nodeWS: "wss://rpc.preview.midnight.network",
+      faucet: "https://faucet.preview.midnight.network/api/request-tokens",
       proofServer: this.getProofServerUrl(),
     };
   }
@@ -102,22 +146,24 @@ export class PreprodTestEnvironment extends RemoteTestEnvironment {
   }
 
   private getProofServerUrl(): string {
-    const container = this.proofServerContainer as { getUrl(): string } | undefined;
+    const container = this.proofServerContainer as
+      | { getUrl(): string }
+      | undefined;
     if (!container) {
-      throw new Error('Proof server container is not available.');
+      throw new Error("Proof server container is not available.");
     }
     return container.getUrl();
   }
 
   getEnvironmentConfiguration(): EnvironmentConfiguration {
     return {
-      walletNetworkId: 'preprod',
-      networkId: 'preprod',
-      indexer: 'https://indexer.preprod.midnight.network/api/v3/graphql',
-      indexerWS: 'wss://indexer.preprod.midnight.network/api/v3/graphql/ws',
-      node: 'https://rpc.preprod.midnight.network',
-      nodeWS: 'wss://rpc.preprod.midnight.network',
-      faucet: 'https://faucet.preprod.midnight.network/api/request-tokens',
+      walletNetworkId: "preprod",
+      networkId: "preprod",
+      indexer: "https://indexer.preprod.midnight.network/api/v3/graphql",
+      indexerWS: "wss://indexer.preprod.midnight.network/api/v3/graphql/ws",
+      node: "https://rpc.preprod.midnight.network",
+      nodeWS: "wss://rpc.preprod.midnight.network",
+      faucet: "https://faucet.preprod.midnight.network/api/request-tokens",
       proofServer: this.getProofServerUrl(),
     };
   }
