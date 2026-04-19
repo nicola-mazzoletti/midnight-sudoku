@@ -39,6 +39,9 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+cli/.env.standalone
+cli/.env.preview
+cli/.env.preprod
 
 # MacOS
 .DS_Store

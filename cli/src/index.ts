@@ -274,7 +274,11 @@ const buildWallet = async (
   logger: Logger,
 ): Promise<string | undefined> => {
   if (config instanceof StandaloneConfig) {
-    return GENESIS_MINT_WALLET_SEED;
+    return config.walletSeed ?? GENESIS_MINT_WALLET_SEED;
+  }
+  if (config.walletSeed) {
+    logger.info("Using wallet seed from environment file — skipping wallet setup.");
+    return config.walletSeed;
   }
   while (true) {
     const choice = await rli.question(WALLET_LOOP_QUESTION);
