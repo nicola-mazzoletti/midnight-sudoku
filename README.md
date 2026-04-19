@@ -4,15 +4,19 @@ A privacy-preserving Sudoku dApp built on the [Midnight blockchain](https://midn
 
 ## Inspiration
 
-The direct inspiration for this project comes from [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by [CharlesHoskinson](https://github.com/CharlesHoskinson). The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise so I went though it.
+The direct inspiration for this project comes from [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by [CharlesHoskinson](https://github.com/CharlesHoskinson). The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise.
 
 Building it from scratch was also a deliberate learning exercise: working through a real example — even a toy one — is the fastest way to build an accurate mental model of how Midnight and Compact actually fit together.
+
+## What this demonstrates
+
+This project is a concrete demonstration of **zero-knowledge proofs**: a solver can prove that they know a valid solution of the puzzle — and get permanently recorded on-chain as having done so — without ever revealing the solution itself. The solution never leaves the client; it is provided as a private ZK witness and verified inside a circuit. The contract records a hashed public key of the solver, so that solvers can demonstrate that they solved the puzzle without ever revealing their identity.
 
 ## Status
 
 | Environment | Status |
 |-------------|--------|
-| Standalone (Docker) | Not tested |
+| Standalone (local via midnight-local-dev) | Working |
 | Preview network | Working |
 | Preprod network | Not tested |
 
@@ -27,7 +31,7 @@ Building it from scratch was also a deliberate learning exercise: working throug
 - If verification passes, the solver's hashed public key is recorded on-chain in a `Set`. The raw public key is never stored.
 - A solver can only submit once — the contract checks set membership before accepting a new proof.
 
-The result: anyone can verify *how many* unique people have solved the puzzle, and a solver can prove *they* are one of them — all without revealing the solution.
+The result: anyone can verify *how many* unique people have solved the puzzle, and a solver can prove *they* are one of them — all without revealing the solution, nor the identity of the solver.
 
 ## Install
 
@@ -52,21 +56,28 @@ npm run build
 
 ### Standalone (local Docker environment)
 
-Spins up a full Midnight stack locally via Docker. No wallet seed required — a genesis seed is used automatically.
+Requires a full local Midnight stack running externally. The CLI does not spawn any containers itself — use [midnight-local-dev](https://github.com/midnightntwrk/midnight-local-dev) to bring up the node, indexer, and proof server before running this command.
+
+No wallet seed required — a genesis seed is used automatically.
 
 ```bash
+# In a separate terminal, start the local stack first:
+# https://github.com/midnightntwrk/midnight-local-dev
+
 npm run standalone
 ```
 
 ### Preview network
 
-Connects to the Midnight preview network. You need a wallet seed and tDUST tokens.
+Connects to the Midnight preview network. You need a wallet seed and tDUST tokens. A proof server must be running locally — the CLI connects to `http://localhost:6300` by default, overridable via the `PROOF_SERVER_URL` environment variable.
 
 ```bash
 npm run preview
 ```
 
 ### Preprod network
+
+Same requirements as preview — local proof server required.
 
 ```bash
 npm run preprod
