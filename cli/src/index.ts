@@ -277,7 +277,9 @@ const buildWallet = async (
     return config.walletSeed ?? GENESIS_MINT_WALLET_SEED;
   }
   if (config.walletSeed) {
-    logger.info("Using wallet seed from environment file — skipping wallet setup.");
+    logger.info(
+      "Using wallet seed from environment file — skipping wallet setup.",
+    );
     return config.walletSeed;
   }
   while (true) {
@@ -299,10 +301,7 @@ const buildWallet = async (
 /* **********************************************************************
  * run: the main entry point for the Sudoku CLI.
  */
-export const run = async (
-  config: Config,
-  logger: Logger,
-): Promise<void> => {
+export const run = async (config: Config, logger: Logger): Promise<void> => {
   const rli = createInterface({ input, output, terminal: true });
   const providersToBeStopped: MidnightWalletProvider[] = [];
   try {
