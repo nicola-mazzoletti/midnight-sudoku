@@ -21,7 +21,12 @@ import { PreprodRemoteConfig } from "../config.js";
 const _stderr = process.stderr.write.bind(process.stderr);
 process.stderr.write = ((chunk: unknown, ...args: unknown[]) => {
   const s = typeof chunk === "string" ? chunk : String(chunk);
-  if (s.includes("API-WS:") || s.includes("Wallet.Sync") || s.includes("RPC-CORE:")) return true;
+  if (
+    s.includes("API-WS:") ||
+    s.includes("Wallet.Sync") ||
+    s.includes("RPC-CORE:")
+  )
+    return true;
   return (_stderr as (c: unknown, ...a: unknown[]) => boolean)(chunk, ...args);
 }) as typeof process.stderr.write;
 

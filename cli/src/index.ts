@@ -32,8 +32,7 @@ globalThis.WebSocket = WebSocket;
 const GENESIS_MINT_WALLET_SEED =
   "0000000000000000000000000000000000000000000000000000000000000001";
 
-const D =
-  "──────────────────────────────────────────────────────────────";
+const D = "──────────────────────────────────────────────────────────────";
 
 const BANNER = `
 ╔══════════════════════════════════════════════════════════════╗
@@ -47,7 +46,10 @@ const BANNER = `
 
 /* ── Spinner for long-running operations ─────────────────────────────────── */
 
-const withStatus = async <T>(message: string, fn: () => Promise<T>): Promise<T> => {
+const withStatus = async <T>(
+  message: string,
+  fn: () => Promise<T>,
+): Promise<T> => {
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   let i = 0;
   const interval = setInterval(
@@ -330,16 +332,14 @@ export const run = async (config: Config, logger: Logger): Promise<void> => {
 
     await withStatus("Starting wallet", () => walletProvider.start());
 
-    const unshieldedState = await withStatus(
-      "Waiting for tNight balance",
-      () =>
-        waitForUnshieldedFunds(
-          logger,
-          walletFacade,
-          envConfiguration,
-          unshieldedToken(),
-          config.requestFaucetTokens,
-        ),
+    const unshieldedState = await withStatus("Waiting for tNight balance", () =>
+      waitForUnshieldedFunds(
+        logger,
+        walletFacade,
+        envConfiguration,
+        unshieldedToken(),
+        config.requestFaucetTokens,
+      ),
     );
     const nightBalance = unshieldedState.balances[unshieldedToken().raw];
     if (nightBalance === undefined) {
