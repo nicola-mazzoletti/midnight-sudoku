@@ -21,11 +21,11 @@ import {
   assertIsContractAddress,
   toHex,
 } from "@midnight-ntwrk/midnight-js-utils";
-import { type TestEnvironment } from "@midnight-ntwrk/testkit-js";
 import { MidnightWalletProvider } from "./midnight-wallet-provider.js";
 import { unshieldedToken } from "@midnight-ntwrk/ledger-v8";
 import { syncWallet, waitForUnshieldedFunds } from "./wallet-utils.js";
 import { generateDust } from "./generate-dust.js";
+import { firstValueFrom } from "rxjs";
 
 // @ts-expect-error: It's needed to enable WebSocket usage through apollo
 globalThis.WebSocket = WebSocket;
@@ -301,15 +301,14 @@ const buildWallet = async (
  */
 export const run = async (
   config: Config,
-  testEnv: TestEnvironment,
   logger: Logger,
 ): Promise<void> => {
   const rli = createInterface({ input, output, terminal: true });
   const providersToBeStopped: MidnightWalletProvider[] = [];
   try {
-    const envConfiguration = await testEnv.start();
+    const envConfiguration = config.getEnvironmentConfiguration();
     logger.info(
-      `Environment started with configuration: ${JSON.stringify(envConfiguration)}`,
+      `Environment configuration: ${JSON.stringify(envConfiguration)}`,
     );
 
     const seed = await buildWallet(config, rli, logger);
@@ -352,6 +351,8 @@ export const run = async (
         );
         await syncWallet(logger, walletFacade);
       }
+      const dustState = await firstValueFrom(walletFacade.state());
+      logger.info(`Dust balance: ${dustState.dust.balance(new Date())}`);
     }
 
     const zkConfigProvider = new NodeZkConfigProvider<SudokuCircuitKeys>(
@@ -395,10 +396,6 @@ export const run = async (
         for (const wallet of providersToBeStopped) {
           logger.info("Stopping wallet...");
           await wallet.stop();
-        }
-        if (testEnv) {
-          logger.info("Stopping test environment...");
-          await testEnv.shutdown();
         }
       } catch (e) {
         logError(logger, e);

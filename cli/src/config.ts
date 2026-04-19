@@ -15,20 +15,14 @@
 
 import path from "node:path";
 import fs from "node:fs";
-import {
-  EnvironmentConfiguration,
-  getTestEnvironment,
-  RemoteTestEnvironment,
-  TestEnvironment,
-} from "@midnight-ntwrk/testkit-js";
+import { type EnvironmentConfiguration } from "@midnight-ntwrk/testkit-js";
 import { setNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
-import { Logger } from "pino";
 
 export interface Config {
   readonly privateStateStoreName: string;
   readonly logDir: string;
   readonly zkConfigPath: string;
-  getEnvironment(logger: Logger): TestEnvironment;
+  getEnvironmentConfiguration(): EnvironmentConfiguration;
   readonly requestFaucetTokens: boolean;
   readonly generateDust: boolean;
   readonly walletSeed: string | undefined;
@@ -43,9 +37,22 @@ const loadEnvSeed = (networkId: string): string | undefined => {
   return match?.[1]?.trim() || undefined;
 };
 
+const loadProofServerUrl = (): string =>
+  process.env.PROOF_SERVER_URL ?? "http://localhost:6300";
+
 export class StandaloneConfig implements Config {
-  getEnvironment(logger: Logger): TestEnvironment {
-    return getTestEnvironment(logger) as TestEnvironment;
+  getEnvironmentConfiguration(): EnvironmentConfiguration {
+    setNetworkId("undeployed");
+    return {
+      walletNetworkId: "undeployed",
+      networkId: "undeployed",
+      indexer: "http://127.0.0.1:8088/api/v4/graphql",
+      indexerWS: "ws://127.0.0.1:8088/api/v4/graphql/ws",
+      node: "http://127.0.0.1:9944",
+      nodeWS: "ws://127.0.0.1:9944",
+      proofServer: "http://127.0.0.1:6300",
+      faucet: undefined,
+    };
   }
   readonly walletSeed = loadEnvSeed("standalone");
   privateStateStoreName = "sudoku-private-state";
@@ -66,13 +73,22 @@ export class StandaloneConfig implements Config {
     "sudoku",
   );
   requestFaucetTokens = false;
-  generateDust = false;
+  generateDust = true;
 }
 
 export class PreviewRemoteConfig implements Config {
-  getEnvironment(logger: Logger): TestEnvironment {
+  getEnvironmentConfiguration(): EnvironmentConfiguration {
     setNetworkId("preview");
-    return new PreviewTestEnvironment(logger);
+    return {
+      walletNetworkId: "preview",
+      networkId: "preview",
+      indexer: "https://indexer.preview.midnight.network/api/v3/graphql",
+      indexerWS: "wss://indexer.preview.midnight.network/api/v3/graphql/ws",
+      node: "https://rpc.preview.midnight.network",
+      nodeWS: "wss://rpc.preview.midnight.network",
+      faucet: "https://faucet.preview.midnight.network/api/request-tokens",
+      proofServer: loadProofServerUrl(),
+    };
   }
   readonly walletSeed = loadEnvSeed("preview");
   privateStateStoreName = "sudoku-private-state";
@@ -92,14 +108,23 @@ export class PreviewRemoteConfig implements Config {
     "managed",
     "sudoku",
   );
-  requestFaucetTokens = false; // Faucet not available via API, gives 500 error
+  requestFaucetTokens = false;
   generateDust = true;
 }
 
 export class PreprodRemoteConfig implements Config {
-  getEnvironment(logger: Logger): TestEnvironment {
+  getEnvironmentConfiguration(): EnvironmentConfiguration {
     setNetworkId("preprod");
-    return new PreprodTestEnvironment(logger);
+    return {
+      walletNetworkId: "preprod",
+      networkId: "preprod",
+      indexer: "https://indexer.preprod.midnight.network/api/v3/graphql",
+      indexerWS: "wss://indexer.preprod.midnight.network/api/v3/graphql/ws",
+      node: "https://rpc.preprod.midnight.network",
+      nodeWS: "wss://rpc.preprod.midnight.network",
+      faucet: "https://faucet.preprod.midnight.network/api/request-tokens",
+      proofServer: loadProofServerUrl(),
+    };
   }
   readonly walletSeed = loadEnvSeed("preprod");
   privateStateStoreName = "sudoku-private-state";
@@ -119,64 +144,6 @@ export class PreprodRemoteConfig implements Config {
     "managed",
     "sudoku",
   );
-  requestFaucetTokens = false; // Faucet not available via API, gives 500 error
+  requestFaucetTokens = false;
   generateDust = true;
-}
-
-export class PreviewTestEnvironment extends RemoteTestEnvironment {
-  constructor(logger: Logger) {
-    super(logger);
-  }
-
-  private getProofServerUrl(): string {
-    const container = this.proofServerContainer as
-      | { getUrl(): string }
-      | undefined;
-    if (!container) {
-      throw new Error("Proof server container is not available.");
-    }
-    return container.getUrl();
-  }
-
-  getEnvironmentConfiguration(): EnvironmentConfiguration {
-    return {
-      walletNetworkId: "preview",
-      networkId: "preview",
-      indexer: "https://indexer.preview.midnight.network/api/v3/graphql",
-      indexerWS: "wss://indexer.preview.midnight.network/api/v3/graphql/ws",
-      node: "https://rpc.preview.midnight.network",
-      nodeWS: "wss://rpc.preview.midnight.network",
-      faucet: "https://faucet.preview.midnight.network/api/request-tokens",
-      proofServer: this.getProofServerUrl(),
-    };
-  }
-}
-
-export class PreprodTestEnvironment extends RemoteTestEnvironment {
-  constructor(logger: Logger) {
-    super(logger);
-  }
-
-  private getProofServerUrl(): string {
-    const container = this.proofServerContainer as
-      | { getUrl(): string }
-      | undefined;
-    if (!container) {
-      throw new Error("Proof server container is not available.");
-    }
-    return container.getUrl();
-  }
-
-  getEnvironmentConfiguration(): EnvironmentConfiguration {
-    return {
-      walletNetworkId: "preprod",
-      networkId: "preprod",
-      indexer: "https://indexer.preprod.midnight.network/api/v3/graphql",
-      indexerWS: "wss://indexer.preprod.midnight.network/api/v3/graphql/ws",
-      node: "https://rpc.preprod.midnight.network",
-      nodeWS: "wss://rpc.preprod.midnight.network",
-      faucet: "https://faucet.preprod.midnight.network/api/request-tokens",
-      proofServer: this.getProofServerUrl(),
-    };
-  }
 }
