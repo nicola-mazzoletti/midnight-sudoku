@@ -12,14 +12,6 @@ Building it from scratch was also a deliberate learning exercise: working throug
 
 This project is a concrete demonstration of **zero-knowledge proofs**: a solver can prove that they know a valid solution of the puzzle — and get permanently recorded on-chain as having done so — without ever revealing the solution itself. The solution never leaves the client; it is provided as a private ZK witness and verified inside a circuit. The contract records a hashed public key of the solver, so that solvers can demonstrate that they solved the puzzle without ever revealing their identity.
 
-## Status
-
-| Environment | Status |
-|-------------|--------|
-| Standalone (local via midnight-local-dev) | Working |
-| Preview network | Working |
-| Preprod network | Not tested |
-
 ## What it does
 
 - A 4×4 Sudoku puzzle is stored on the ledger at deploy time and cannot be changed afterwards (it is declared `sealed`).
