@@ -131,3 +131,9 @@ The solution is stored locally. It is passed to the ZK circuit as a witness at p
 - Support variable grid sizes (e.g. 9×9) by parameterising the contract dimensions.
 - Build a GUI to explore wallet integration and the broader Midnight dApp connector model.
 - Add a circuit that lets a solver prove to a third party that they are in the solvers set, without revealing which entry is theirs.
+
+## Credits
+
+The structure and style of the `api/` and `cli/` packages — the wallet setup flow, the spinner-based status UX, the phased `setupWallet` → providers → `setupContract` → main loop layout, and the overall presentation — are adapted from [JAlbertCode/example-locker](https://github.com/JAlbertCode/example-locker). Many thanks to the author for a clear, approachable reference implementation.
+
+Additional thanks to [Olanetsoft/midnight-mcp](https://github.com/Olanetsoft/midnight-mcp) for reference material that helped shape parts of this project.
