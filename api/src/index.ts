@@ -160,20 +160,21 @@ export class SudokuAPI implements DeployedSudokuAPI {
   }
 
   /**
-   * Joins an already deployed Sudoku puzzle contract.
-   *
-   * @param providers The Sudoku providers.
-   * @param contractAddress The address of the deployed contract.
-   * @param solution The solver's private solution grid.
-   * @param logger An optional logger.
+   * Joins an already deployed Sudoku puzzle contract. If no private state
+   * exists locally, one is initialized with an empty solution — call
+   * `setSolution()` before `checkSolution()`.
    */
   static async join(
     providers: SudokuProviders,
     contractAddress: ContractAddress,
-    solution: bigint[][],
     logger?: Logger,
   ): Promise<SudokuAPI> {
     logger?.info({ joinContract: { contractAddress } });
+
+    providers.privateStateProvider.setContractAddress(contractAddress);
+    const existing = await providers.privateStateProvider.get(
+      sudokuPrivateStateKey,
+    );
 
     const deployedContract = await findDeployedContract<SudokuContract>(
       providers,
@@ -181,11 +182,7 @@ export class SudokuAPI implements DeployedSudokuAPI {
         contractAddress,
         compiledContract: compiledSudokuContract,
         privateStateId: sudokuPrivateStateKey,
-        initialPrivateState: await SudokuAPI.getPrivateState(
-          providers,
-          contractAddress,
-          solution,
-        ),
+        initialPrivateState: existing ?? createSudokuPrivateState([]),
       },
     );
 
@@ -196,18 +193,6 @@ export class SudokuAPI implements DeployedSudokuAPI {
     });
 
     return new SudokuAPI(deployedContract, providers, logger);
-  }
-
-  private static async getPrivateState(
-    providers: SudokuProviders,
-    contractAddress: ContractAddress,
-    solution: bigint[][],
-  ): Promise<SudokuPrivateState> {
-    providers.privateStateProvider.setContractAddress(contractAddress);
-    const existing = await providers.privateStateProvider.get(
-      sudokuPrivateStateKey,
-    );
-    return existing ?? createSudokuPrivateState(solution);
   }
 }
 

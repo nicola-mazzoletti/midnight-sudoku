@@ -14,7 +14,6 @@
 // limitations under the License.
 
 import path from "node:path";
-import fs from "node:fs";
 import { type EnvironmentConfiguration } from "@midnight-ntwrk/testkit-js";
 import { setNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
 
@@ -25,17 +24,9 @@ export interface Config {
   getEnvironmentConfiguration(): EnvironmentConfiguration;
   readonly requestFaucetTokens: boolean;
   readonly generateDust: boolean;
-  readonly walletSeed: string | undefined;
 }
 
 export const currentDir = path.resolve(new URL(import.meta.url).pathname, "..");
-
-const loadEnvSeed = (networkId: string): string | undefined => {
-  const envFile = path.resolve(currentDir, "..", `.env.${networkId}`);
-  if (!fs.existsSync(envFile)) return undefined;
-  const match = fs.readFileSync(envFile, "utf8").match(/^WALLET_SEED=(.+)$/m);
-  return match?.[1]?.trim() || undefined;
-};
 
 const loadProofServerUrl = (): string =>
   process.env.PROOF_SERVER_URL ?? "http://localhost:6300";
@@ -54,7 +45,6 @@ export class StandaloneConfig implements Config {
       faucet: undefined,
     };
   }
-  readonly walletSeed = loadEnvSeed("standalone");
   privateStateStoreName = "sudoku-private-state";
   logDir = path.resolve(
     currentDir,
@@ -90,7 +80,6 @@ export class PreviewRemoteConfig implements Config {
       proofServer: loadProofServerUrl(),
     };
   }
-  readonly walletSeed = loadEnvSeed("preview");
   privateStateStoreName = "sudoku-private-state";
   logDir = path.resolve(
     currentDir,
@@ -126,7 +115,6 @@ export class PreprodRemoteConfig implements Config {
       proofServer: loadProofServerUrl(),
     };
   }
-  readonly walletSeed = loadEnvSeed("preprod");
   privateStateStoreName = "sudoku-private-state";
   logDir = path.resolve(
     currentDir,
