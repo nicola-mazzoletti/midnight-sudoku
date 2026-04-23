@@ -1,5 +1,7 @@
 # Midnight Sudoku
 
+This project is built on the Midnight Network.
+
 A privacy-preserving Sudoku dApp built on the [Midnight blockchain](https://midnight.network), written as a learning exercise to build a hands-on mental model of Midnight and the Compact smart contract language.
 
 ## Inspiration
