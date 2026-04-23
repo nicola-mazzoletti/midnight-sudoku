@@ -6,7 +6,7 @@ A privacy-preserving Sudoku dApp built on the [Midnight blockchain](https://midn
 
 ## Inspiration
 
-The direct inspiration for this project comes from [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by [CharlesHoskinson](https://github.com/CharlesHoskinson). The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise.
+The direct inspiration for this project comes from the book [Seven Layers](https://github.com/CharlesHoskinson/sevenlayer) by [CharlesHoskinson](https://github.com/CharlesHoskinson). The book uses a Sudoku puzzle as a concrete example to illustrate the idea of programmable privacy — the ability to *prove* something without *revealing* it. That example was the perfect learning exercise.
 
 Building it from scratch was also a deliberate learning exercise: working through a real example — even a toy one — is the fastest way to build an accurate mental model of how Midnight and Compact actually fit together.
 
@@ -17,12 +17,12 @@ This project is a concrete demonstration of **zero-knowledge proofs**: a solver 
 ## What it does
 
 - A 4×4 Sudoku puzzle is stored on the ledger at deploy time and cannot be changed afterwards (it is declared `sealed`).
-- Any user can submit a solution. The solution is kept entirely private — it is provided as a ZK **witness** and never leaves the client.
+- Any user can submit a solution. The solution is kept entirely private — it is provided as a **witness** and never leaves the client.
 - The Compact circuit verifies:
   - The solution is complete (no zeros).
   - It is consistent with the given clues.
   - Every row, column, and 2×2 box contains the digits 1–4 exactly once.
-- If verification passes, the solver's hashed public key is recorded on-chain in a `Set`. The raw public key is never stored.
+- If verification passes, the solver's hashed public key is recorded on-chain in a `Set`. Public keys are hashed to preserve solvers privacy.
 - A solver can only submit once — the contract checks set membership before accepting a new proof.
 
 The result: anyone can verify *how many* unique people have solved the puzzle, and a solver can prove *they* are one of them — all without revealing the solution, nor the identity of the solver.
